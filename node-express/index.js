@@ -3,7 +3,7 @@ const app = express();
 const port = 5000;
 
 // Middleware to parse JSON body
-// app.use(express.json());
+app.use(express.json());
 
 // Routes
 const bookRoutes = require('./routes/bookRoutes'); // copy code from "./" into bookRoutes

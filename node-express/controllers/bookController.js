@@ -1,3 +1,5 @@
+const Joi = require('joi');
+
 const { books } = require('../models/bookModel');
 const { authors } = require('../models/authorModel');
 
@@ -27,9 +29,28 @@ const getBook = (req, res) => {
     res.json(bookWithAuthor);
 }
 
-const addNewBook = (req, res) => {
-    const newBook = req.body;
-    
-}
+const validateBook = (newBookData) => {
+    const schema = Joi.object({
+      name: Joi.string().required(),
+      price: Joi.number().required(),
+      authorId: Joi.number().required(),
+    });
+    const { error } = schema.validate(newBookData);
+    return error;
+  };
 
-module.exports = { getBooks, getBook };
+const addNewBook = (req, res) => {
+  const newBook = req.body;
+  const validationError = validateBook(newBook);
+  if (validationError) {
+    return res.status(400).send(validationError.details[0].message);
+  }
+
+  // Add the new book to the model (replace with database interaction if needed)
+  books.push(newBook);
+
+  // Send a success response with the newly created book
+  res.status(201).json(newBook);
+};
+
+module.exports = { getBooks, getBook, addNewBook };
