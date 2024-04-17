@@ -4,7 +4,7 @@ const { books } = require('../models/bookModel');
 const { authors } = require('../models/authorModel');
 
 // GET /books
-const getBooks = (req, res) => {
+const getAll = (req, res) => {
     const booksWithAuthors = books.map(book => { //The map() method iterates through each element in the array and applies a function to each element.
         const author = authors.find(author => author.id === book.authorId);
         return { ...book, author };
@@ -15,7 +15,7 @@ const getBooks = (req, res) => {
 // This means it can handle various data types like objects, arrays, strings, numbers, booleans, and even null and undefined.
 
 
-const getBook = (req, res) => {
+const getById = (req, res) => {
     const { id } = req.params;
     const book = books.find(book => book.id.toString() === id);
     if (!book) {
@@ -39,7 +39,7 @@ const validateBook = (newBookData) => {
     return error;
   };
 
-const addNewBook = (req, res) => {
+const add = (req, res) => {
   const newBook = req.body;
   const validationError = validateBook(newBook);
   if (validationError) {
@@ -53,4 +53,38 @@ const addNewBook = (req, res) => {
   res.status(201).json(newBook);
 };
 
-module.exports = { getBooks, getBook, addNewBook };
+// + PUT /books/:id: Update an existing book by its ID.
+const updateById = (req, res) => {
+    const { id } = req.params;
+    const updatedBook = req.body;
+    const bookIndex = books.findIndex(book => book.id.toString() === id); // Find the index of the book to update
+  
+    if (bookIndex === -1) {
+      return res.status(404).send('Book not found');
+    }
+  
+    const validationError = validateBook(updatedBook);
+    if (validationError) {
+      return res.status(400).send(validationError.details[0].message);
+    }
+  
+    books[bookIndex] = { ...updatedBook, id: books[bookIndex].id }; // Preserve original ID
+  
+    res.status(200).json(updatedBook);
+  };
+  
+// + DELETE /books/:id: Delete a book by its ID.
+  const deleteById = (req, res) => {
+    const { id } = req.params;
+    const bookIndex = books.findIndex(book => book.id.toString() === id); 
+
+    if (bookIndex === -1) {
+      return res.status(404).send('Book not found');
+    }
+
+  books.splice(bookIndex, 1); 
+
+  res.status(204).json({ message: 'Book deleted successfully' }); // 204 No Content
+  };
+
+module.exports = { getAll, getById, add, updateById, deleteById };
